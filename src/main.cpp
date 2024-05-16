@@ -1,7 +1,7 @@
 #include <Arduino.h>
 
-int PIN_1 = 2;
-int PIN_2 = 1;
+int PIN_1 = 31;
+int PIN_2 = 32;
 
 // params
 const bool ramp = false; // sets mode
@@ -10,15 +10,15 @@ float pin_1_ramp_down_time = 1000.0; // in us
 float pin_2_ramp_up_time = 500.0; // in us
 float pin_2_ramp_down_time = 1000.0; // in us
 
-// inferred
-float pin_1_m_up = 4095 / pin_1_ramp_up_time;
-float pin_1_m_down = 4095 / pin_1_ramp_down_time;
-float pin_2_m_up = 4095 / pin_2_ramp_up_time;
-float pin_2_m_down = 4095 / pin_2_ramp_down_time;
-
 // declarations
-int v_min = 0;
+int v_min = 2000;
 int v_max = 4095; // 2**12 - 1
+
+// inferred
+float pin_1_m_up = (v_max - v_min) / pin_1_ramp_up_time;
+float pin_1_m_down = (v_max - v_min) / pin_1_ramp_down_time;
+float pin_2_m_up = (v_max - v_min) / pin_2_ramp_up_time;
+float pin_2_m_down = (v_max - v_min) / pin_2_ramp_down_time;
 
 int pin_1_v;
 bool pin_1_is_high = false;
@@ -83,7 +83,8 @@ void calc_voltages_ramp(){
   // ramping up 
   if (pin_1_is_high == true && pin_1_ramp_up_done == false){
     dt = micros() - pin_1_t_on;
-    pin_1_v = pin_1_m_up * dt;
+    pin_1_v = v_min + (pin_1_m_up * dt);
+
     if (pin_1_v > v_max){
       pin_1_v = v_max;
       pin_1_ramp_up_done = true;
@@ -106,7 +107,7 @@ void calc_voltages_ramp(){
   // ramping up 
   if (pin_2_is_high == true && pin_2_ramp_up_done == false){
     dt = micros() - pin_2_t_on;
-    pin_2_v = pin_2_m_up * dt;
+    pin_2_v = v_min + (pin_2_m_up * dt);
     if (pin_2_v > v_max){
       pin_2_v = v_max;
       pin_2_ramp_up_done = true;
